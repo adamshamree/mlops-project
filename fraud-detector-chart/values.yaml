@@ -1,0 +1,33 @@
+replicaCount: 2
+
+image:
+  repository: fraud-detector
+  tag: v1
+  pullPolicy: Never
+
+nameOverride: "fraud-detector"
+fullnameOverride: "fraud-detector"
+
+serviceAccount:
+  create: false
+  name: ""
+
+service:
+  type: NodePort
+  port: 80
+
+ingress:
+  enabled: false
+
+resources: {}
+
+autoscaling:
+  enabled: false
+
+podAnnotations: {}
+podLabels: {}
+podSecurityContext: {}
+securityContext: {}
+nodeSelector: {}
+tolerations: []
+affinity: {}
