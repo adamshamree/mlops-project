@@ -1,0 +1,51 @@
+name: Fraud Detector CI/CD
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          pip install flask pytest
+
+      - name: Run tests
+        run: |
+          cd docker
+          python3 -c "
+          from fraud_model import predict_fraud
+          # Test 1: should be fraud
+          r = predict_fraud({'amount': 8000, 'foreign': True, 'hour': 2})
+          assert r['fraud'] == True, 'Test 1 failed'
+          # Test 2: should NOT be fraud
+          r = predict_fraud({'amount': 100, 'foreign': False, 'hour': 12})
+          assert r['fraud'] == False, 'Test 2 failed'
+          print('All tests passed!')
+          "
+
+  build:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Build Docker image
+        run: |
+          docker build -t fraud-detector:${{ github.sha }} ./docker
+          echo "Image built: fraud-detector:${{ github.sha }}"
+
+      - name: Deployment summary
+        run: |
+          echo "✅ Tests passed"
+          echo "✅ Docker image built"
+          echo "✅ Ready to deploy fraud-detector:${{ github.sha }}"
